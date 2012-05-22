@@ -14,6 +14,7 @@ import org.apache.http.{ HttpResponse, NameValuePair }
 import org.apache.http.util.EntityUtils
 import net.liftweb.json.JsonParser._
 import net.liftweb.json.JValue
+import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
 
 
 trait Using {
@@ -32,11 +33,8 @@ trait Using {
 
 class Client extends Using {
 
-  val httpClient = new DefaultHttpClient()
-
-  val routePlanner = new ProxySelectorRoutePlanner(httpClient.getConnectionManager.getSchemeRegistry, ProxySelector.getDefault)
-
-  httpClient.setRoutePlanner(routePlanner)
+  val client = new DefaultHttpClient()
+  val httpClient = new DefaultHttpClient(new ThreadSafeClientConnManager(client.getConnectionManager.getSchemeRegistry), client.getParams)
 
   private def constructNameValuePairs(data: Iterable[(String, String)]): JList[NameValuePair] = {
     data.foldLeft(new ArrayList[NameValuePair](data.size)) {
