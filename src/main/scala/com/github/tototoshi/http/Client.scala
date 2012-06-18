@@ -79,6 +79,12 @@ class Response(httpResponse: HttpResponse) extends Using {
   }
 
   def asJson(): JValue = parse(asString)
+  
+  def asBytes(): Array[Byte] = {
+    val res = EntityUtils.toByteArray(httpResponse.getEntity())
+    EntityUtils.consume(httpResponse.getEntity)
+    res
+  }
 
   def save(filename: String): Unit = save(new File(filename))
 
