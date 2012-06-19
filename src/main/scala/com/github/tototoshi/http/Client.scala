@@ -15,6 +15,7 @@ import org.apache.http.util.EntityUtils
 import net.liftweb.json.JsonParser._
 import net.liftweb.json.JValue
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
+import org.apache.http.entity.ByteArrayEntity
 
 trait Using {
 
@@ -52,6 +53,13 @@ class Client extends Using {
     val request = new HttpPost(url)
     header foreach { case (k, v) => request.addHeader(k, v) }
     request.setEntity(new StringEntity(body, encoding))
+    new Response(httpClient.execute(request))
+  }
+  
+  def POST(url: String, body: Array[Byte], header: Map[String, String]): Response = {
+    val request = new HttpPost(url)
+    header foreach { case (k, v) => request.addHeader(k, v) }
+    request.setEntity(new ByteArrayEntity(body))
     new Response(httpClient.execute(request))
   }
 
