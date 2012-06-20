@@ -49,7 +49,7 @@ class Client extends Using {
     new Response(httpClient.execute(request))
   }
 
-  def POST(url: String, body: String = "", header: Map[String, String] = Map(), encoding: String = "UTF-8"): Response = {
+  def POST(url: String, body: String, header: Map[String, String], encoding: String): Response = {
     val request = new HttpPost(url)
     header foreach { case (k, v) => request.addHeader(k, v) }
     request.setEntity(new StringEntity(body, encoding))
