@@ -23,13 +23,13 @@ class ClientSpec extends Specification { def is =
   val testserver = "http://technically.us/test.text"
 
   val client = new Client
-  def statuscode = client.GET(testserver).statusCode must be equalTo(200)
-  def statuscode2 = client.POST(testserver).statusCode must be equalTo(200)
+  def statuscode = client.GET(testserver).statusCode() must be equalTo(200)
+  def statuscode2 = client.POST(testserver, "").statusCode() must be equalTo(200)
   def resultString = client.GET(testserver).asString must be equalTo(jane)
-  def resultString2 = client.POST(testserver).asString must be equalTo(jane)
+  def resultString2 = client.POST(testserver, "").asString must be equalTo(jane)
   def save1 = {
     val file = new File("7fb9b160-d703-47d3-a459-621b80e48b1d")
-    client.POST(testserver).save(file)
+    client.POST(testserver, "").save(file)
     val contents = Source.fromFile(file).getLines.mkString("\n")
     file.delete()
     contents must be equalTo(jane.substring(0, jane.length - 1))

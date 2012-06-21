@@ -77,9 +77,12 @@ class Client extends Using {
 
 class Response(httpResponse: HttpResponse) extends Using {
 
-  def statusCode(): Int = {
-    EntityUtils.consume(httpResponse.getEntity)
-    httpResponse.getStatusLine.getStatusCode
+  def getHttpResponse = httpResponse
+  
+  def statusCode(consume: Boolean = true): Int = {
+    if (consume)
+    	EntityUtils.consume(httpResponse.getEntity)
+	httpResponse.getStatusLine.getStatusCode
   }
 
   def asString(): String = asString("UTF-8")
