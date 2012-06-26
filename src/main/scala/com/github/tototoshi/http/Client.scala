@@ -82,8 +82,9 @@ class Response(httpResponse: HttpResponse) extends Using {
   def consume = EntityUtils.consume(httpResponse.getEntity)
   
   def statusCode(consume: Boolean = true): Int = {
-    if (consume)
+    if (consume) {
     	EntityUtils.consume(httpResponse.getEntity)
+    }
 	httpResponse.getStatusLine.getStatusCode
   }
 
