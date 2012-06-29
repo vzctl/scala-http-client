@@ -16,6 +16,9 @@ import net.liftweb.json.JsonParser._
 import net.liftweb.json.JValue
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager
 import org.apache.http.entity.ByteArrayEntity
+import org.apache.http.impl.conn.SchemeRegistryFactory
+import org.apache.http.params.SyncBasicHttpParams
+import org.apache.http.client.HttpClient
 
 trait Using {
 
@@ -31,11 +34,19 @@ trait Using {
 
 }
 
-class Client extends Using {
+object Client {
 
-  val client = new DefaultHttpClient()
-  val httpClient = new DefaultHttpClient(new ThreadSafeClientConnManager(client.getConnectionManager.getSchemeRegistry), client.getParams)
+  def defaultClient: HttpClient = {
+    val params = new SyncBasicHttpParams()
+    DefaultHttpClient.setDefaultHttpParams(params)
+    new DefaultHttpClient(new ThreadSafeClientConnManager(SchemeRegistryFactory.createDefault()), params)
+  }
 
+}
+
+class Client(httpClient: HttpClient) extends Using {
+  def this() = this(Client.defaultClient)
+  
   private def constructNameValuePairs(data: Iterable[(String, String)]): JList[NameValuePair] = {
     data.foldLeft(new ArrayList[NameValuePair](data.size)) {
       case (pairs, (k, v)) => { pairs.add(new BasicNameValuePair(k, v)); pairs }
@@ -52,14 +63,14 @@ class Client extends Using {
   def POST(url: String, body: String): Response = {
     POST(url, body, Map[String, String](), "UTF-8")
   }
-  
+
   def POST(url: String, body: String, header: Map[String, String], encoding: String): Response = {
     val request = new HttpPost(url)
     header foreach { case (k, v) => request.addHeader(k, v) }
     request.setEntity(new StringEntity(body, encoding))
     new Response(httpClient.execute(request))
   }
-  
+
   def POST(url: String, body: Array[Byte], header: Map[String, String]): Response = {
     val request = new HttpPost(url)
     header foreach { case (k, v) => request.addHeader(k, v) }
@@ -78,14 +89,14 @@ class Client extends Using {
 class Response(httpResponse: HttpResponse) extends Using {
 
   def getHttpResponse = httpResponse
-  
+
   def consume = EntityUtils.consume(httpResponse.getEntity)
-  
+
   def statusCode(consume: Boolean = true): Int = {
     if (consume) {
-    	EntityUtils.consume(httpResponse.getEntity)
+      EntityUtils.consume(httpResponse.getEntity)
     }
-	httpResponse.getStatusLine.getStatusCode
+    httpResponse.getStatusLine.getStatusCode
   }
 
   def asString(): String = asString("UTF-8")
@@ -97,7 +108,7 @@ class Response(httpResponse: HttpResponse) extends Using {
   }
 
   def asJson(): JValue = parse(asString)
-  
+
   def asBytes(): Array[Byte] = {
     val res = EntityUtils.toByteArray(httpResponse.getEntity())
     EntityUtils.consume(httpResponse.getEntity)
